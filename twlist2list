@@ -71,7 +71,11 @@ if [ -z "$targets" ]; then
 fi
 num_ids="$(echo "$targets" | wc -l)"
 echo "add: ${num_ids} ids (${1}->${2})"
-for i in $(seq 1 100 "$num_ids"); do
+
+while IFS='' read -r e; do
+  idx+=("$e")
+done < <(seq 1 100 "$num_ids")
+for i in "${idx[@]}"; do
   echo -n "[$i,$((i+99))]"
   res="$(
     twurl "/1.1/lists/members/create_all.json" -d "list_id=${2}&screen_name=$(
@@ -79,9 +83,14 @@ for i in $(seq 1 100 "$num_ids"); do
     )"
   )"
   if echo "$res" | grep -q '^{"errors":'; then
-    echo 'error: response seems invalid' >&2
+    echo -e '=> error: response seems invalid' >&2
     echo "$res" >&2
     exit 1
   fi
+  echo "=> OK"
+  echo -ne 'zzz...\r'
+  if [ "$i" -ne "${idx[*]: -1}" ]; then
+    sleep "$((RANDOM%15+15))s"
+  fi
 done
-echo "done!"
+echo "!done!"
