@@ -22,9 +22,9 @@ MIT
 
 <details>
 <summary>
-
-`mklistff`
-
+<code>
+mklistff
+</code>
 </summary>
 
 Bash script to make all followings/followers jsonl of a user
