@@ -26,8 +26,11 @@ fi
 :>"${1}.followers.jsonl"
 :>"${1}.followings.jsonl"
 
+echo '[followers]'
 cursor=-1
+cnt=0
 while { [ "$cursor" -ne 0 ] && [ -n "$cursor" ];}; do
+  echo -n $'\r\e[K'"[$((cnt*200+1)),$(((cnt+1)*200))]"
   res="$(
     twurl "/1.1/followers/list.json?screen_name=${1}&count=200&cursor=${cursor}"
   )"
@@ -40,11 +43,16 @@ while { [ "$cursor" -ne 0 ] && [ -n "$cursor" ];}; do
     echo "$res" | jq '.next_cursor'
   )"
   echo "$res" >> "${1}.followers.jsonl"
+  echo -n '=>zzz...'
   sleep "$((RANDOM%5+60))s"
+  ((cnt++))
 done
 
+echo '[followings]'
 cursor=-1
+cnt=0
 while { [ "$cursor" -ne 0 ] && [ -n "$cursor" ];}; do
+  echo -n $'\r\e[K'"[$((cnt*200+1)),$(((cnt+1)*200))]"
   res="$(
     twurl "/1.1/friends/list.json?screen_name=${1}&count=200&cursor=${cursor}"
   )"
@@ -57,5 +65,7 @@ while { [ "$cursor" -ne 0 ] && [ -n "$cursor" ];}; do
     echo "$res" | jq '.next_cursor'
   )"
   echo "$res" >> "${1}.followings.jsonl"
+  echo -n '=>zzz...'
   sleep "$((RANDOM%5+60))s"
+  ((cnt++))
 done
