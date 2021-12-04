@@ -40,7 +40,7 @@ while { [ "$cursor" -ne 0 ] && [ -n "$cursor" ];}; do
     echo "$res" | jq '.next_cursor'
   )"
   echo "$res" >> "${1}.followers.jsonl"
-  sleep "$((RANDOM%5+3))s"
+  sleep "$((RANDOM%5+60))s"
 done
 
 cursor=-1
@@ -57,5 +57,5 @@ while { [ "$cursor" -ne 0 ] && [ -n "$cursor" ];}; do
     echo "$res" | jq '.next_cursor'
   )"
   echo "$res" >> "${1}.followings.jsonl"
-  sleep "$((RANDOM%5+3))s"
+  sleep "$((RANDOM%5+60))s"
 done
