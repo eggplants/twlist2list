@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+USAGE='usage: '$0' <list id to retrieve> <your list id to append>'
+
+if ! command -v twurl &>/dev/null; then
+  echo 'run: $ gem install twurl' >&2
+  exit 1
+elif ! command -v jq &>/dev/null; then
+  echo 'install: jq'
+  exit 1
+elif ! [ -f ~/.twurlrc ]; then
+  echo 'run: $ twurl authorize -c <consumer key> -s <consumer seckey>' >&2
+  exit 1
+elif [ $# -ne 2 ]; then
+  echo "error: invalid arity $#, expected 2"
+  echo "$USAGE" >&2
+  exit 1
+elif ! [[ "$1" =~ ^[1-9][0-9]+$ ]]; then
+  echo 'error: invalid id '"$1" >&2
+  echo "$USAGE" >&2
+  exit 1
+elif ! [[ "$2" =~ ^[1-9][0-9]+$ ]]; then
+  echo 'error: invalid id '"$2" >&2
+  echo "$USAGE" >&2
+  exit 1
+elif [ "$1" = "$2" ]; then
+  echo 'error: both list ids are same' >&2
+  exit 1
+fi
+
+ret_res="$(
+  twurl "/1.1/lists/members.json?count=5000&list_id=${1}"
+)"
+if [ -z "$ret_res" ]; then
+  echo 'error: response is empty' >&2
+  exit 1
+elif [ "${ret_res:0:10}" = '{"errors":' ]; then
+  echo 'error: response seems invalid' >&2
+  echo "$ret_res" >&2
+  exit 1
+fi
+ret_ids="$(
+  echo "$ret_res" | jq  -r '.users[]|select(.protected|not)|.screen_name' | sort
+)"
+if [ -z "$ret_ids" ]; then
+  echo "list ${1} is empty" >&2
+  exit 1
+fi
+app_res="$(
+  twurl "/1.1/lists/members.json?count=5000&list_id=${2}"
+)"
+if [ -z "$app_res" ]; then
+  echo 'error: response is empty' >&2
+  exit 1
+elif [ "${app_res:0:10}" = '{"errors":' ]; then
+  echo 'error: response seems invalid' >&2
+  echo "$app_res" >&2
+  exit 1
+fi
+app_ids="$(
+  echo "$app_res" | jq  -r '.users[]|select(.protected|not)|.screen_name' | sort
+)"
+targets="$(
+  sort <(echo "$ret_ids") <(echo "$app_ids") <(echo "$app_ids") | uniq -u
+)"
+if [ -z "$targets" ]; then
+  echo "no addition!" >&2
+  exit 1
+fi
+num_ids="$(echo "$targets" | wc -l)"
+echo "add: ${num_ids} ids (${1}->${2})"
+for i in $(seq 1 100 "$num_ids"); do
+  echo -n "[$i,$((i+99))]"
+  res="$(
+    twurl "/1.1/lists/members/create_all.json" -d "list_id=${2}&screen_name=$(
+      echo "$targets" | sed -n "$i,$((i+99))p" | tr \\n , | sed 's/,$//'
+    )"
+  )"
+  if echo "$res" | grep -q '^{"errors":'; then
+    echo 'error: response seems invalid' >&2
+    echo "$res" >&2
+    exit 1
+  fi
+done
+echo "done!"
