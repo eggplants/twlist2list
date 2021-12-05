@@ -45,3 +45,29 @@ $ ./mklistff <screen name>
 MIT
 
 </details>
+
+<details>
+<summary>
+<code>
+mkkrmn
+</code>
+</summary>
+
+Bash script to generate script (`mklistkrmn`) for appending my list ([🌰🈵語ネイティブ]())https://twitter.com/i/lists/1453986127161946116
+
+## Usage
+
+```shellsession
+$ ./mklistff Allen_Japan_No1 && ./mkkrmn && ./mklistkrmn
+```
+
+## Requirement
+
+[stedolan/jq](https://github.com/stedolan/jq), [twitter/twurl](https://github.com/twitter/twurl)
+
+## License
+
+MIT
+
+</details>
+

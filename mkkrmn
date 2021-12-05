@@ -18,7 +18,7 @@ jq '.users[]|select(.protected|not)|{"@":.screen_name, "d":[.description,"&&&",.
       while read -r i; do
         sed 's/^  *//' << A
           echo "[${c}]"
-          twurl "/1.1/lists/members/create_all.json" -d "list_id=1453986127161946116&screen_name='"$i"'" |
+          twurl "/1.1/lists/members/create_all.json" -d "list_id=1453986127161946116&screen_name=$i" |
           egrep -o '"member_count":[0-9]+'
           echo sleep 600s
 A
