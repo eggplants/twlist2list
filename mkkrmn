@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+list_id="1453986127161946116"
+
 set -euo pipefail
 if ! command -v twurl jq &>/dev/null; then
   echo "require: jq, twurl" >&2
@@ -9,18 +11,25 @@ elif ! [ -f Allen_Japan_No1.followers.jsonl ]; then
   exit 1
 fi
 
-echo -e '#!/usr/bin/env bash\nset -euxo pipefail' > mklistkrmn
+echo -e '#!/usr/bin/env bash\nset -euo pipefail' > mklistkrmn
 chmod +x mklistkrmn
 c=0
-jq '.users[]|select(.protected|not)|{"@":.screen_name, "d":[.description,"&&&",.name]|add}' Allen_Japan_No1.followers.jsonl |
-  grep -E -B1 '🌰🈵|🌹|CA4LA|ゎょな|だ㌔|クリマン|ｸﾘマン|労働人生' |
-    grep '"@"' | awk -F\" '$0=$4' | xargs -n 100 | tr \  , |
-      while read -r i; do
-        sed 's/^  *//' << A
-          echo "[${c}]"
-          twurl "/1.1/lists/members/create_all.json" -d "list_id=1453986127161946116&screen_name=$i" |
-          grep -E -o '"member_count":[0-9]+'
-          echo sleep 600s
+a="$(
+  jq '.users[]|select(.protected|not)|{"@":.screen_name, "d":[.description,"&&&",.name]|add}' Allen_Japan_No1.followers.jsonl |
+    grep -E -B1 '🌰🈵|🌹|CA4LA|ゎょな|だ㌔|クリマン|ｸﾘマン|労働人生' |
+    grep '"@"' | awk -F\" '$0=$4'
+)"
+b="$(
+  twurl "/1.1/lists/members.json?list_id=${list_id}&count=5000" | jq -r '.users[].screen_name'
+)"
+
+sort <(echo "$a") <(echo "$b") <(echo "$b") | uniq -u |
+  xargs -n 100 | tr \  , | while read -r i; do
+  sed 's/^  *//' << A
+    echo "[${c}]"
+    twurl "/1.1/lists/members/create_all.json" -d "list_id=${list_id}&screen_name=$i" |
+    grep -E -o '"member_count":[0-9]+'
+    sleep 600s
 A
-        ((c++))
-      done >> mklistkrmn
+  ((c++))
+done >> mklistkrmn
