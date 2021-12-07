@@ -15,7 +15,7 @@ echo -e '#!/usr/bin/env bash\nset -euo pipefail' > mklistkrmn
 chmod +x mklistkrmn
 c=0
 a="$(
-  jq '.users[]|select(.protected|not)|{"@":.screen_name, "d":[.description,"&&&",.name]|add}' Allen_Japan_No1.followers.jsonl |
+  jq 'map(.users)|add|.[]|select(.protected|not) |{"@":.screen_name, "d":[.description,"&&&",.name]|add}' Allen_Japan_No1.followers.jsonl |
     grep -E -B1 '🌰🈵|🌹|CA4LA|ゎょな|だ㌔|クリマン|ｸﾘマン|労働人生' |
     grep '"@"' | awk -F\" '$0=$4'
 )"
@@ -33,3 +33,4 @@ sort <(echo "$a") <(echo "$b") <(echo "$b") | uniq -u |
 A
   ((c++))
 done >> mklistkrmn
+echo 'wrote: mklistkrmn'
