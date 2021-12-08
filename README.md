@@ -53,7 +53,7 @@ mkkrmn
 </code>
 </summary>
 
-Bash script to generate script (`mklistkrmn`) for appending my list ([🌰🈵語ネイティブ](https://twitter.com/i/lists/1453986127161946116))
+Bash script to generate script (`mklistkrmn`) for appending my list ([✨🌹🌰🈵🌹✨](https://twitter.com/i/lists/1453986127161946116))
 
 ## Usage
 
